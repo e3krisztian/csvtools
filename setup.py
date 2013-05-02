@@ -28,7 +28,8 @@ setup(
             'csv_zip = csvtools.zip:main',
             'csv_unzip = csvtools.unzip:main',
             'csv_rmfields = csvtools.rmfields:main',
-            'csv_extract_map = csvtools.extract_map:main'
+            'csv_extract_map = csvtools.extract_map:main',
+            'csv_to_postgres = csvtools.to_postgres:main',
         ],
     }
     )

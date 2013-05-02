@@ -42,6 +42,25 @@ The design goals of the tools are
 
 
 ------------------
+### to_postgres
+
+    - create and populate postgres table
+
+
+```sh
+    csv... | csv_to_postgres new-table-name | psql -q [connection options]
+```
+
+All fields are created as VARCHAR NOT NULL.
+Possible NULL values in csv (unquoted empty strings) are imported as empty
+strings.
+
+Possible future improvements:
+ - serial primary key column
+ - per field data types defined by a config file - field-data-type map
+ - custom index/indices (including primary key, unique constraint)
+
+------------------
 ### unzip
     split csv file into two by columns - in a reversible way
 
