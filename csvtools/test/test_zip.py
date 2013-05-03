@@ -1,23 +1,16 @@
 import unittest
-from csvtools.test import ReaderWriter
+from csvtools.test import ReaderWriter, csv_reader
 import csvtools.zip as m
-
-
-def csv_in(content):
-    import csv
-    from StringIO import StringIO
-    import textwrap
-    return csv.reader(StringIO(textwrap.dedent(content)))
 
 
 class TestZip(unittest.TestCase):
 
     def test_normal_case(self):
-        csv_in1 = csv_in('''\
+        csv_in1 = csv_reader('''\
             a,b,id
             a,b,1
             aa,bb,2''')
-        csv_in2 = csv_in('''\
+        csv_in2 = csv_reader('''\
             c,d,id
             c,d,1
             cc,dd,2''')
@@ -31,11 +24,11 @@ class TestZip(unittest.TestCase):
         self.assertEqual('aa bb cc dd'.split(), csv_out.rows[2])
 
     def test_keep_id_id_field_is_in_output(self):
-        csv_in1 = csv_in('''\
+        csv_in1 = csv_reader('''\
             a,b,id
             a,b,1
             aa,bb,2''')
-        csv_in2 = csv_in('''\
+        csv_in2 = csv_reader('''\
             c,d,id
             c,d,1
             cc,dd,2''')
@@ -49,22 +42,22 @@ class TestZip(unittest.TestCase):
         self.assertEqual('2 aa bb cc dd'.split(), csv_out.rows[2])
 
     def test_no_common_field_zip_raises_error(self):
-        csv_in1 = csv_in('a,b')
-        csv_in2 = csv_in('c,d')
+        csv_in1 = csv_reader('a,b')
+        csv_in2 = csv_reader('c,d')
         csv_out = ReaderWriter()
         with self.assertRaises(m.BadInput):
             m.csvzip(csv_in1, csv_in2, csv_out)
 
     def test_two_common_fields_zip_raises_error(self):
-        csv_in1 = csv_in('a,b')
-        csv_in2 = csv_in('a,b')
+        csv_in1 = csv_reader('a,b')
+        csv_in2 = csv_reader('a,b')
         csv_out = ReaderWriter()
         with self.assertRaises(m.BadInput):
             m.csvzip(csv_in1, csv_in2, csv_out)
 
     def test_id_field_is_not_in_output(self):
-        csv_in1 = csv_in('a,b,id')
-        csv_in2 = csv_in('c,d,id')
+        csv_in1 = csv_reader('a,b,id')
+        csv_in2 = csv_reader('c,d,id')
         csv_out = ReaderWriter()
 
         m.csvzip(csv_in1, csv_in2, csv_out)
@@ -72,11 +65,11 @@ class TestZip(unittest.TestCase):
         self.assertNotIn('id', csv_out.rows[0])
 
     def test_mismatch_in_id_values_raises_error(self):
-        csv_in1 = csv_in('''\
+        csv_in1 = csv_reader('''\
             a,b,id
             a,b,1
             aa,bb,2''')
-        csv_in2 = csv_in('''\
+        csv_in2 = csv_reader('''\
             c,d,id
             c,d,1
             cc,dd,3''')

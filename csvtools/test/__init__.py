@@ -1,3 +1,12 @@
+import csv
+from StringIO import StringIO
+import textwrap
+
+
+def csv_reader(content):
+    return csv.reader(StringIO(textwrap.dedent(content)))
+
+
 class ReaderWriter(object):
 
     '''
