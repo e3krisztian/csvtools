@@ -26,3 +26,21 @@ class TestHeader(unittest.TestCase):
     def test_extractor(self):
         extractor = self.header.extractor('b')
         self.assertEqual(2, extractor([1, 2, 3]))
+
+
+class TestFieldMap_parse(unittest.TestCase):
+
+    def test_input_fields(self):
+        fm = m.FieldMap.parse('aout=a,b,cout=c')
+
+        self.assertTupleEqual(('a', 'b', 'c'), fm.input_fields)
+
+    def test_output_fields(self):
+        # [out=]in
+        fm = m.FieldMap.parse('aout=a,b,cout=c')
+
+        self.assertTupleEqual(('aout', 'b', 'cout'), fm.output_fields)
+
+    def test_duplicate_output_field_raises_error(self):
+        with self.assertRaises(m.DuplicateFieldError):
+            m.FieldMap.parse('a=b,a')

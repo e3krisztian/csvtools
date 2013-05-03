@@ -21,3 +21,47 @@ class Header(object):
 
     def extractor(self, name):
         return self.extractors_by_name[name]
+
+
+class DuplicateFieldError(Exception):
+    '''Invalid csv - duplicate field in a header'''
+
+
+# FIXME: this duplicates functionality of FieldMaps in field_maps
+# TODO: remove class field_map.field_maps
+class FieldMap(object):
+
+    def __init__(self, output_input_field_pairs):
+        self.field_maps = output_input_field_pairs
+        if len(set(self.output_fields)) != len(self.field_maps):
+            raise DuplicateFieldError(self.output_fields)
+
+    @classmethod
+    def parse(cls, field_maps_string):
+        '''
+        Parses list of field maps, where field maps are separated by comma (,)
+        '''
+        return cls(
+            tuple(
+                cls._parse_field_spec(field_spec)
+                for field_spec in field_maps_string.split(',')))
+
+    @classmethod
+    def _parse_field_spec(cls, field_spec):
+        '''
+        Parses field specs format: [out=]in
+        '''
+        output_field_name, eq, input_field_name = field_spec.partition('=')
+        input_field_name = input_field_name or output_field_name
+        return (output_field_name, input_field_name)
+
+    def __iter__(self):
+        return iter(self.field_maps)
+
+    @property
+    def input_fields(self):
+        return tuple(i for (o, i) in self.field_maps)
+
+    @property
+    def output_fields(self):
+        return tuple(o for (o, i) in self.field_maps)
