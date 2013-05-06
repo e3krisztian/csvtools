@@ -2,7 +2,7 @@ import sys
 import csv
 
 import argparse
-from csvtools.lib import Header
+from csvtools.lib import Header, extract
 
 
 class DuplicateFieldError(Exception):
@@ -18,16 +18,14 @@ def unzip(csv_in, fields, csv_out_spec, csv_out_unspec, zip_field='id'):
     if zip_field in header:
         raise DuplicateFieldError(zip_field)
 
-    spec_extractors = [header.extractor(field) for field in fields]
+    spec_extractors = header.extractors(fields)
     unspec_extractors = [
         header.extractor(field)
         for field in header_row
         if field not in fields]
 
     def extract_to(output, extractors, row_id, row):
-        output.writerow(
-            [str(row_id)]
-            + [extract_field(row) for extract_field in extractors])
+        output.writerow([str(row_id)] + extract(extractors, row))
 
     def unzip_row(row_id, row):
         extract_to(csv_out_spec, spec_extractors, row_id, row)
