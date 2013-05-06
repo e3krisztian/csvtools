@@ -15,7 +15,7 @@ Technically:
 import argparse
 import os.path
 import sys
-from csvtools.lib import FieldsMap, Header
+from csvtools.lib import FieldsMap, Header, extract
 from csvtools.exceptions import MissingFieldError
 from csvtools.exceptions import ExtraFieldError
 from csvtools.exceptions import InvalidReferenceFieldError
@@ -58,21 +58,16 @@ class Mapper(object):
         self._check_parameters(ref_field, fields, header)
 
         param_header = Header([ref_field] + fields)
-        to_map_order_extractors = [
-            param_header.extractor(field)
-            for field in header]
+        to_map_order_extractors = param_header.extractors(header)
         def to_map_order(ref_field_and_values):
-            return tuple(
-                x(ref_field_and_values)
-                for x in to_map_order_extractors)
+            return extract(to_map_order_extractors, ref_field_and_values)
         self.to_map_order = to_map_order
 
         def permutated_reader():
             extractors = (
-                [header.extractor(ref_field)]
-                + [header.extractor(field) for field in fields])
+                [header.extractor(ref_field)] + header.extractors(fields))
             for row in reader:
-                yield tuple(x(row) for x in extractors)
+                yield extract(extractors, row)
 
         self._read_existing_mappings(permutated_reader())
 
@@ -149,7 +144,7 @@ def main():
     reader = csv.reader(sys.stdin)
     writer = csv.writer(sys.stdout)
     map_file, map_fields, ref_field = sys.argv[1:]
-    raise  NotImplementedError
+    raise NotImplementedError
 
 
 if __name__ == '__main__':
