@@ -27,6 +27,29 @@ class TestHeader(unittest.TestCase):
         extractor = self.header.extractor('b')
         self.assertEqual(2, extractor([1, 2, 3]))
 
+    def test_extractors(self):
+        extractors = self.header.extractors(['b', 'a'])
+        self.assertEqual([2, 1], [x([1, 2, 3]) for x in extractors])
+
+
+class Test_extract(unittest.TestCase):
+
+    def test_extractors_called_with_data(self):
+        def extractor(value):
+            def x(data):
+                return (data, value)
+            return x
+
+        extractors = [extractor('a'), extractor(1), extractor(None)]
+
+        self.assertEqual(
+            (
+                (any, 'a'),
+                (any, 1),
+                (any, None)
+            ),
+            m.extract(extractors, data=any))
+
 
 class TestFieldsMap_parse(unittest.TestCase):
 

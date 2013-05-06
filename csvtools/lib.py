@@ -23,6 +23,13 @@ class Header(object):
     def extractor(self, name):
         return self.extractors_by_name[name]
 
+    def extractors(self, field_names):
+        return [self.extractors_by_name[name] for name in field_names]
+
+
+def extract(extractors, data):
+    return tuple(extractor(data) for extractor in extractors)
+
 
 # FIXME: this duplicates functionality of FieldMaps in field_maps
 # TODO: remove class field_map.field_maps
