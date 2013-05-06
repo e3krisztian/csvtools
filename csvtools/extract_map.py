@@ -51,6 +51,7 @@ class Mapper(object):
         self.appender = appender
         self.max_ref = 0
         self.values_to_ref = dict()
+        fields = list(fields)
         reader = iter(reader)
         header = Header(reader.next())
 
@@ -114,19 +115,34 @@ class Mapper(object):
         return ref
 
 
-class MapExtractor(object):
+class EntityExtractor(object):
 
-    def __init__(self, fields_map, ref_field_map, keep_fields):
+    ''' Extract entities and replace them with entity references.
+
+    Optionally remove/keep entity attributes.
+    '''
+
+    def __init__(self, ref_field_map, fields_map, keep_fields):
+        self.ref_field_map = FieldsMap.parse(ref_field_map)
+        self.fields_map = FieldsMap.parse(fields_map)
+        self.mapper = None
+
+    def use_new_mapper(self, appender):
+        self.mapper = Mapper.new(
+            self.ref_field_map.output_fields[0],
+            self.fields_map.output_fields,
+            appender)
+
+    def use_existing_mapper(self, reader, appender):
         pass
 
-    def make_map(self, reader, appender):
-        pass
-
-    def make_map_for(self, filename):
+    def use_file_mapper(self, filename):
         pass
 
     def extract(self, reader, writer):
-        pass
+        for row in reader:
+            mapped_row = row
+            writer.writerow(mapped_row)
 
 
 def main():

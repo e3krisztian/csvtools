@@ -101,4 +101,63 @@ class TestMap(unittest.TestCase):
 
         mapped_id = mapper.map(('aa', 'bb'))
 
+        self.assertEqual(2, mapped_id)
         self.assertListEqual([('bb', 2, 'aa')], appender.rows)
+
+
+class ExtractorFixture(object):
+
+    def __init__(self):
+        self.appender = ReaderWriter()
+        self.mapped_reader = self._mapper_reader()
+        self.mapper_appender = ReaderWriter()
+        self.reader = self._reader()
+        self.extractor = m.EntityExtractor(
+            'id=ab_id', 'a,other=b', keep_fields=True)
+
+    def _reader(self):
+        return csv_reader('''\
+            b,a,c
+            b1,a1,c1
+            b2,a2,c2
+            b1,a1,c3
+            ''')
+
+    def _mapper_reader(self):
+        return csv_reader('''\
+            other,id,a
+            b1,1,a1
+            b3,3,a3
+            ''')
+
+
+class TestEntityExtractor(unittest.TestCase):
+
+    def test_extract_new_mapper_entities(self):
+        f = ExtractorFixture()
+        f.extractor.use_new_mapper(f.mapper_appender)
+
+        f.extractor.extract(f.reader, f.appender)
+
+        self.assertListEqual(
+            [
+                ('id', 'a', 'other'),
+                (1, 'a1', 'b1'),
+                (2, 'a2', 'b2'),
+            ],
+            f.mapper_appender.rows)
+
+    def test_extract_new_mapper_output(self):
+        f = ExtractorFixture()
+        f.extractor.use_new_mapper(f.mapper_appender)
+
+        f.extractor.extract(f.reader, f.appender)
+
+        self.assertListEqual(
+            [
+                ('b', 'a', 'c', 'ab_id'),
+                ('a1', 'b1', 'c1', 1),
+                ('a2', 'b2', 'c2', 2),
+                ('a1', 'b1', 'c3', 1),
+            ],
+            f.appender.rows)
