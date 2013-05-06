@@ -29,7 +29,7 @@ class DuplicateFieldError(Exception):
 
 # FIXME: this duplicates functionality of FieldMaps in field_maps
 # TODO: remove class field_map.field_maps
-class FieldMap(object):
+class FieldsMap(object):
 
     def __init__(self, output_input_field_pairs):
         self.field_maps = output_input_field_pairs
