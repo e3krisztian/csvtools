@@ -4,7 +4,7 @@ import csv
 
 import argparse
 import itertools
-from lib import Header
+from lib import Header, extract
 
 
 class BadInput(Exception):
@@ -48,9 +48,6 @@ def csvzip(csv_in1, csv_in2, csv_out, keep_id=False):
 
     output_extractors1 = extractors(header1, id_field)
     output_extractors2 = extractors(header2, id_field)
-
-    def extract(extractors, row):
-        return [extractor(row) for extractor in extractors]
 
     def zip_rows(row1, row2):
         zip_id1 = id_extractor1(row1)

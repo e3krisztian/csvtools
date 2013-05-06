@@ -45,7 +45,7 @@ class TestMap(unittest.TestCase):
         mapped_id = mapper.map(('aa', 'bb'))
         self.assertEqual(1, mapped_id)
         self.assertEqual(2, len(appender.rows))
-        self.assertTupleEqual((1, 'aa', 'bb'), appender.rows[1])
+        self.assertListEqual([1, 'aa', 'bb'], appender.rows[1])
 
     def test_map_new_value(self):
         reader = self.map_reader()
@@ -56,7 +56,7 @@ class TestMap(unittest.TestCase):
 
         self.assertEqual(2, mapped_id)
         self.assertEqual(1, len(appender.rows))
-        self.assertTupleEqual((2, 'aaa', 'bbb'), appender.rows[0])
+        self.assertListEqual([2, 'aaa', 'bbb'], appender.rows[0])
 
     def test_map_existing_value(self):
         reader = self.map_reader()
@@ -102,7 +102,7 @@ class TestMap(unittest.TestCase):
         mapped_id = mapper.map(('aa', 'bb'))
 
         self.assertEqual(2, mapped_id)
-        self.assertListEqual([('bb', 2, 'aa')], appender.rows)
+        self.assertListEqual([['bb', 2, 'aa']], appender.rows)
 
 
 class ExtractorFixture(object):
@@ -141,9 +141,9 @@ class TestEntityExtractor(unittest.TestCase):
 
         self.assertListEqual(
             [
-                ('id', 'a', 'other'),
-                (1, 'a1', 'b1'),
-                (2, 'a2', 'b2'),
+                ['id', 'a', 'other'],
+                [1, 'a1', 'b1'],
+                [2, 'a2', 'b2'],
             ],
             f.mapper_appender.rows)
 
@@ -155,9 +155,9 @@ class TestEntityExtractor(unittest.TestCase):
 
         self.assertListEqual(
             [
-                ('b', 'a', 'c', 'ab_id'),
-                ('a1', 'b1', 'c1', 1),
-                ('a2', 'b2', 'c2', 2),
-                ('a1', 'b1', 'c3', 1),
+                ['b', 'a', 'c', 'ab_id'],
+                ['a1', 'b1', 'c1', 1],
+                ['a2', 'b2', 'c2', 2],
+                ['a1', 'b1', 'c3', 1],
             ],
             f.appender.rows)

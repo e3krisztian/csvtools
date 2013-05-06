@@ -43,11 +43,11 @@ class Test_extract(unittest.TestCase):
         extractors = [extractor('a'), extractor(1), extractor(None)]
 
         self.assertEqual(
-            (
+            [
                 (any, 'a'),
                 (any, 1),
                 (any, None)
-            ),
+            ],
             m.extract(extractors, data=any))
 
 
