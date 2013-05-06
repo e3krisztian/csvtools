@@ -1,4 +1,5 @@
 from operator import itemgetter
+from csvtools.exceptions import DuplicateFieldError
 
 
 class Header(object):
@@ -21,10 +22,6 @@ class Header(object):
 
     def extractor(self, name):
         return self.extractors_by_name[name]
-
-
-class DuplicateFieldError(Exception):
-    '''Invalid csv - duplicate field in a header'''
 
 
 # FIXME: this duplicates functionality of FieldMaps in field_maps
