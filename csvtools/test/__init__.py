@@ -21,5 +21,8 @@ class ReaderWriter(object):
     def writerow(self, row):
         self.rows.append(row)
 
+    def writerows(self, rows):
+        self.rows.extend(rows)
+
     def __iter__(self):
         return iter(self.rows)

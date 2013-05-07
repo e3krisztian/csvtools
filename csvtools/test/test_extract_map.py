@@ -3,6 +3,7 @@ from temp_dir import within_temp_dir
 import csv
 
 from csvtools.test import ReaderWriter, csv_reader
+from csvtools.lib import FieldsMap
 import csvtools.extract_map as m
 
 
@@ -36,7 +37,7 @@ class TestMap(unittest.TestCase):
         mapper = m.Mapper.new('id', ['a', 'b'], appender=appender)
 
         self.assertEqual(1, len(appender.rows))
-        self.assertTupleEqual(('id', 'a', 'b'), appender.rows[0])
+        self.assertListEqual(['id', 'a', 'b'], appender.rows[0])
 
     def test_new_map_can_be_used(self):
         appender = ReaderWriter()
@@ -109,11 +110,15 @@ class ExtractorFixture(object):
 
     def __init__(self):
         self.appender = ReaderWriter()
-        self.mapped_reader = self._mapper_reader()
+        self.mapper_reader = self._mapper_reader()
         self.mapper_appender = ReaderWriter()
         self.reader = self._reader()
         self.extractor = m.EntityExtractor(
-            'id=ab_id', 'a,other=b', keep_fields=True)
+            #                 in/output: ab_id    entity-mapper: id
+            ref_field_map=FieldsMap.parse('id=ab_id'),
+            #                 in/output: a, b     entity-mapper: a, other
+            fields_map=FieldsMap.parse('a,other=b'),
+            keep_fields=True)
 
     def _reader(self):
         return csv_reader('''\
@@ -156,8 +161,8 @@ class TestEntityExtractor(unittest.TestCase):
         self.assertListEqual(
             [
                 ['b', 'a', 'c', 'ab_id'],
-                ['a1', 'b1', 'c1', 1],
-                ['a2', 'b2', 'c2', 2],
-                ['a1', 'b1', 'c3', 1],
+                ['b1', 'a1', 'c1', 1],
+                ['b2', 'a2', 'c2', 2],
+                ['b1', 'a1', 'c3', 1],
             ],
             f.appender.rows)

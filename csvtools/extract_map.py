@@ -15,7 +15,7 @@ Technically:
 import argparse
 import os.path
 import sys
-from csvtools.lib import FieldsMap, Header, extract
+from csvtools.lib import FieldsMap, Header, extract, extract_tuple
 from csvtools.exceptions import MissingFieldError
 from csvtools.exceptions import ExtraFieldError
 from csvtools.exceptions import InvalidReferenceFieldError
@@ -43,7 +43,7 @@ class Mapper(object):
 
     @classmethod
     def new(cls, ref_field, fields, appender):
-        header = (ref_field,) + tuple(fields)
+        header = [ref_field] + list(fields)
         appender.writerow(header)
         return cls(ref_field, fields, [header], appender)
 
@@ -89,7 +89,7 @@ class Mapper(object):
             ref = int(ref_and_values[0])
             values = tuple(ref_and_values[1:])
             self.max_ref = max(ref, self.max_ref)
-            # XXX: check input map against multiple maps?
+            # XXX: check input map if it is ambiguous?
             self.values_to_ref[values] = ref
 
     def map(self, values):
@@ -118,8 +118,8 @@ class EntityExtractor(object):
     '''
 
     def __init__(self, ref_field_map, fields_map, keep_fields):
-        self.ref_field_map = FieldsMap.parse(ref_field_map)
-        self.fields_map = FieldsMap.parse(fields_map)
+        self.ref_field_map = ref_field_map
+        self.fields_map = fields_map
         self.mapper = None
 
     def use_new_mapper(self, appender):
@@ -135,9 +135,18 @@ class EntityExtractor(object):
         pass
 
     def extract(self, reader, writer):
-        for row in reader:
-            mapped_row = row
-            writer.writerow(mapped_row)
+        ireader = iter(reader)
+        input_header = Header(ireader.next())
+
+        entity_extractors = input_header.extractors(self.fields_map.input_fields)
+        def entity_ref(row):
+            return self.mapper.map(extract_tuple(entity_extractors, row))
+
+        output_extractors = input_header.extractors(input_header) + [entity_ref]
+        output_header = list(input_header) + list(self.ref_field_map.input_fields)
+
+        writer.writerow(output_header)
+        writer.writerows(extract(output_extractors, row) for row in ireader)
 
 
 def main():
