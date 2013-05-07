@@ -166,3 +166,30 @@ class TestEntityExtractor(unittest.TestCase):
                 ['b1', 'a1', 'c3', 1],
             ],
             f.appender.rows)
+
+    def test_extract_existing_mapper_entities(self):
+        f = ExtractorFixture()
+        f.extractor.use_existing_mapper(f.mapper_reader, f.mapper_appender)
+
+        f.extractor.extract(f.reader, f.appender)
+
+        self.assertListEqual(
+            [
+                ['b2', 4, 'a2'],
+            ],
+            f.mapper_appender.rows)
+
+    def test_extract_existing_mapper_output(self):
+        f = ExtractorFixture()
+        f.extractor.use_existing_mapper(f.mapper_reader, f.mapper_appender)
+
+        f.extractor.extract(f.reader, f.appender)
+
+        self.assertListEqual(
+            [
+                ['b', 'a', 'c', 'ab_id'],
+                ['b1', 'a1', 'c1', 1],
+                ['b2', 'a2', 'c2', 4],
+                ['b1', 'a1', 'c3', 1],
+            ],
+            f.appender.rows)

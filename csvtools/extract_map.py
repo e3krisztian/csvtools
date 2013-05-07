@@ -126,7 +126,11 @@ class EntityExtractor(object):
             appender)
 
     def use_existing_mapper(self, reader, appender):
-        pass
+        self.mapper = Mapper(
+            self.ref_field_map.output_fields[0],
+            self.fields_map.output_fields,
+            reader,
+            appender)
 
     def use_file_mapper(self, filename):
         pass
