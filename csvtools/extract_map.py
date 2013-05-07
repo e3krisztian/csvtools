@@ -12,7 +12,6 @@ Technically:
 
 '''
 
-import argparse
 import os.path
 import sys
 from csvtools.lib import FieldsMap, Header, list_extractor, tuple_extractor
@@ -49,7 +48,8 @@ class Mapper(object):
         self._check_parameters(ref_field, fields, header)
 
         param_header = Header([ref_field] + fields)
-        self.to_entity_file_order = list_extractor(param_header.extractors(header))
+        self.to_entity_file_order = list_extractor(
+            param_header.extractors(header))
 
         def permutated_reader():
             transform = list_extractor(
@@ -129,12 +129,14 @@ class EntityExtractor(object):
 
         extract_entity = tuple_extractor(
             input_header.extractors(self.fields_map.input_fields))
+
         def entity_ref(row):
             return self.mapper.map(extract_entity(row))
 
-        output_extractors = input_header.extractors(input_header) + [entity_ref]
-        transform = list_extractor(output_extractors)
-        output_header = list(input_header) + list(self.ref_field_map.input_fields)
+        transform = list_extractor(
+            input_header.extractors(input_header) + [entity_ref])
+        output_header = (
+            list(input_header) + list(self.ref_field_map.input_fields))
 
         writer.writerow(output_header)
         writer.writerows(transform(row) for row in ireader)

@@ -29,6 +29,7 @@ class Header(object):
 
 def list_extractor(item_extractors):
     _item_extractors = tuple(item_extractors)
+
     def extract(data):
         return [extract_item(data) for extract_item in _item_extractors]
     return extract
@@ -36,6 +37,7 @@ def list_extractor(item_extractors):
 
 def tuple_extractor(item_extractors):
     _item_extractors = tuple(item_extractors)
+
     def extract(data):
         return tuple(extract_item(data) for extract_item in _item_extractors)
     return extract

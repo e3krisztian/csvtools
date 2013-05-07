@@ -33,11 +33,11 @@ class TestMap(unittest.TestCase):
 
         with self.assertRaises(m.InvalidReferenceFieldError):
             reader = self.map_reader()
-            m.Mapper('id', ['id', 'a','b'], reader, appender=None)
+            m.Mapper('id', ['id', 'a', 'b'], reader, appender=None)
 
     def test_new_creates_header(self):
         appender = ReaderWriter()
-        mapper = m.Mapper.new('id', ['a', 'b'], appender=appender)
+        m.Mapper.new('id', ['a', 'b'], appender=appender)
 
         self.assertEqual(1, len(appender.rows))
         self.assertListEqual(['id', 'a', 'b'], appender.rows[0])

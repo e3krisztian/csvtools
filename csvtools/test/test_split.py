@@ -34,7 +34,7 @@ class Test_split(unittest.TestCase):
         rows = ReaderWriter()
         rows.writerow(u'a b'.split())
         for i in range(11):
-            rows.writerow([i, i+1])
+            rows.writerow([i, i + 1])
 
         m.split(rows, prefix='split.', chunk_size=1)
 
