@@ -27,12 +27,18 @@ class Header(object):
         return [self.extractors_by_name[name] for name in field_names]
 
 
-def extract(extractors, data):
-    return [extractor(data) for extractor in extractors]
+def list_extractor(item_extractors):
+    _item_extractors = tuple(item_extractors)
+    def extract(data):
+        return [extract_item(data) for extract_item in _item_extractors]
+    return extract
 
 
-def extract_tuple(extractors, data):
-    return tuple(extractor(data) for extractor in extractors)
+def tuple_extractor(item_extractors):
+    _item_extractors = tuple(item_extractors)
+    def extract(data):
+        return tuple(extract_item(data) for extract_item in _item_extractors)
+    return extract
 
 
 # FIXME: this duplicates functionality of FieldMaps in field_maps

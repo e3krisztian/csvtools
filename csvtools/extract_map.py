@@ -15,7 +15,7 @@ Technically:
 import argparse
 import os.path
 import sys
-from csvtools.lib import FieldsMap, Header, extract, extract_tuple
+from csvtools.lib import FieldsMap, Header, list_extractor, tuple_extractor
 from csvtools.exceptions import MissingFieldError
 from csvtools.exceptions import ExtraFieldError
 from csvtools.exceptions import InvalidReferenceFieldError
@@ -58,16 +58,13 @@ class Mapper(object):
         self._check_parameters(ref_field, fields, header)
 
         param_header = Header([ref_field] + fields)
-        to_map_order_extractors = param_header.extractors(header)
-        def to_map_order(ref_field_and_values):
-            return extract(to_map_order_extractors, ref_field_and_values)
-        self.to_map_order = to_map_order
+        self.to_map_order = list_extractor(param_header.extractors(header))
 
         def permutated_reader():
-            extractors = (
+            transform = list_extractor(
                 [header.extractor(ref_field)] + header.extractors(fields))
             for row in reader:
-                yield extract(extractors, row)
+                yield transform(row)
 
         self._read_existing_mappings(permutated_reader())
 
@@ -138,15 +135,17 @@ class EntityExtractor(object):
         ireader = iter(reader)
         input_header = Header(ireader.next())
 
-        entity_extractors = input_header.extractors(self.fields_map.input_fields)
+        extract_entity = tuple_extractor(
+            input_header.extractors(self.fields_map.input_fields))
         def entity_ref(row):
-            return self.mapper.map(extract_tuple(entity_extractors, row))
+            return self.mapper.map(extract_entity(row))
 
         output_extractors = input_header.extractors(input_header) + [entity_ref]
+        transform = list_extractor(output_extractors)
         output_header = list(input_header) + list(self.ref_field_map.input_fields)
 
         writer.writerow(output_header)
-        writer.writerows(extract(output_extractors, row) for row in ireader)
+        writer.writerows(transform(row) for row in ireader)
 
 
 def main():

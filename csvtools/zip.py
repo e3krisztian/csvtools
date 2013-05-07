@@ -4,7 +4,7 @@ import csv
 
 import argparse
 import itertools
-from lib import Header, extract
+from lib import Header, list_extractor
 
 
 class BadInput(Exception):
@@ -27,11 +27,11 @@ def get_id_field(header1, header2):
     return id_field
 
 
-def extractors(header, excluded_field):
-    return [
+def extractor(header, excluded_field):
+    return list_extractor(
         header.extractor(field)
         for field in header
-        if field != excluded_field]
+        if field != excluded_field)
 
 
 def csvzip(csv_in1, csv_in2, csv_out, keep_id=False):
@@ -43,21 +43,19 @@ def csvzip(csv_in1, csv_in2, csv_out, keep_id=False):
 
     id_field = get_id_field(header1, header2)
 
-    id_extractor1 = header1.extractor(id_field)
-    id_extractor2 = header2.extractor(id_field)
+    extract_id1 = header1.extractor(id_field)
+    extract_id2 = header2.extractor(id_field)
 
-    output_extractors1 = extractors(header1, id_field)
-    output_extractors2 = extractors(header2, id_field)
+    extract_output1 = extractor(header1, id_field)
+    extract_output2 = extractor(header2, id_field)
 
     def zip_rows(row1, row2):
-        zip_id1 = id_extractor1(row1)
-        zip_id2 = id_extractor2(row2)
+        zip_id1 = extract_id1(row1)
+        zip_id2 = extract_id2(row2)
         if zip_id1 != zip_id2:
             raise IdMismatch
 
-        output = (
-            extract(output_extractors1, row1)
-            + extract(output_extractors2, row2))
+        output = extract_output1(row1) + extract_output2(row2)
 
         if keep_id:
             return [zip_id1] + output
@@ -65,8 +63,9 @@ def csvzip(csv_in1, csv_in2, csv_out, keep_id=False):
             return output
 
     csv_out.writerow(zip_rows(list(header1), list(header2)))
-    for row1, row2 in itertools.izip(i_csv_in1, i_csv_in2):
-        csv_out.writerow(zip_rows(row1, row2))
+    csv_out.writerows(
+        zip_rows(row1, row2)
+        for row1, row2 in itertools.izip(i_csv_in1, i_csv_in2))
 
 
 def parse_args(args):

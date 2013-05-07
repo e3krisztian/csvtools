@@ -1,5 +1,6 @@
 import unittest
 import csvtools.lib as m
+from operator import itemgetter
 
 
 class TestHeader(unittest.TestCase):
@@ -32,42 +33,43 @@ class TestHeader(unittest.TestCase):
         self.assertEqual([2, 1], [x([1, 2, 3]) for x in extractors])
 
 
-class Test_extract(unittest.TestCase):
+class Seq_extractor_Tests(object):
+    # Mixin class adding tests for sequence extractors
 
-    def test_extractors_called_with_data(self):
-        def extractor(value):
-            def x(data):
-                return (data, value)
-            return x
+    seq_type = 'any sequence type'
+    function_under_test = 'seq extractor creator function'
 
-        extractors = [extractor('a'), extractor(1), extractor(None)]
+    def skip_if_mixin(self):
+        if not isinstance(self, unittest.TestCase):
+            raise unittest.SkipTest(
+                '... test runner erroneously picks up mixins')
 
-        self.assertEqual(
-            [
-                (any, 'a'),
-                (any, 1),
-                (any, None)
-            ],
-            m.extract(extractors, data=any))
+    def test(self):
+        self.skip_if_mixin()
+        extract = self.function_under_test([itemgetter(0), itemgetter(2)])
+
+        self.assertEqual(self.seq_type([1, 3]), extract([1, 2, 3]))
+        self.assertEqual(self.seq_type(['a', 'c']), extract('abcdefg'))
+
+    def test_works_with_iterator_parameter(self):
+        self.skip_if_mixin()
+        item_extractors_iterator = iter([itemgetter(0), itemgetter(2)])
+        extract = self.function_under_test(item_extractors_iterator)
+
+        self.assertEqual(self.seq_type([1, 3]), extract([1, 2, 3]))
+        self.assertEqual(self.seq_type(['a', 'c']), extract('abcdefg'))
 
 
-class Test_extract_tuple(unittest.TestCase):
+class Test_list_extractor(Seq_extractor_Tests, unittest.TestCase):
 
-    def test_extractors_called_with_data(self):
-        def extractor(value):
-            def x(data):
-                return (data, value)
-            return x
+    seq_type = list
+    function_under_test = staticmethod(m.list_extractor)
 
-        extractors = [extractor('a'), extractor(1), extractor(None)]
 
-        self.assertEqual(
-            (
-                (any, 'a'),
-                (any, 1),
-                (any, None)
-            ),
-            m.extract_tuple(extractors, data=any))
+class Test_tuple_extractor(Seq_extractor_Tests, unittest.TestCase):
+
+    seq_type = tuple
+    function_under_test = staticmethod(m.tuple_extractor)
 
 
 class TestFieldsMap_parse(unittest.TestCase):
