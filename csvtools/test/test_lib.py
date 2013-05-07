@@ -51,6 +51,25 @@ class Test_extract(unittest.TestCase):
             m.extract(extractors, data=any))
 
 
+class Test_extract_tuple(unittest.TestCase):
+
+    def test_extractors_called_with_data(self):
+        def extractor(value):
+            def x(data):
+                return (data, value)
+            return x
+
+        extractors = [extractor('a'), extractor(1), extractor(None)]
+
+        self.assertEqual(
+            (
+                (any, 'a'),
+                (any, 1),
+                (any, None)
+            ),
+            m.extract_tuple(extractors, data=any))
+
+
 class TestFieldsMap_parse(unittest.TestCase):
 
     def test_input_fields(self):

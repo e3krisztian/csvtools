@@ -31,6 +31,10 @@ def extract(extractors, data):
     return [extractor(data) for extractor in extractors]
 
 
+def extract_tuple(extractors, data):
+    return tuple(extractor(data) for extractor in extractors)
+
+
 # FIXME: this duplicates functionality of FieldMaps in field_maps
 # TODO: remove class field_map.field_maps
 class FieldsMap(object):
