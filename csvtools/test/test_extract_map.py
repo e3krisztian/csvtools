@@ -1,6 +1,9 @@
 import unittest
 from temp_dir import within_temp_dir
 import csv
+import textwrap
+from StringIO import StringIO
+import subprocess
 
 from csvtools.test import ReaderWriter, csv_reader
 from csvtools.lib import FieldsMap
@@ -193,3 +196,96 @@ class TestEntityExtractor(unittest.TestCase):
                 ['b1', 'a1', 'c3', 1],
             ],
             f.appender.rows)
+
+
+class Test_script(unittest.TestCase):
+
+    # integration tests
+
+    STDIN = textwrap.dedent('''\
+        b,a,c
+        b1,a1,c1
+        b2,a2,c2
+        b1,a1,c3
+        ''')
+
+    ENTITIES = textwrap.dedent('''\
+        other,id,a
+        b1,1,a1
+        b3,3,a3
+        ''')
+
+    ENTITIES_FILE = 'entities.csv'
+
+    CMDLINE = ['csv_extract_map', 'a,other=b', 'id=ab_id', ENTITIES_FILE]
+
+    def entities(self):
+        with open(self.ENTITIES_FILE) as f:
+            return list(csv.reader(f))
+
+    def call_without_creating_entities_file(self):
+        process = subprocess.Popen(
+            self.CMDLINE,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate(self.STDIN)
+
+        self.assertEqual('', stderr, stderr)
+        return list(csv.reader(StringIO(stdout)))
+
+    def call_with_entities_file(self):
+        with open(self.ENTITIES_FILE, 'w') as f:
+            f.write(self.ENTITIES)
+        return self.call_without_creating_entities_file()
+
+    @within_temp_dir
+    def test_extract_new_mapper_entities(self):
+        self.call_without_creating_entities_file()
+
+        self.assertListEqual(
+            [
+                ['id', 'a', 'other'],
+                ['1', 'a1', 'b1'],
+                ['2', 'a2', 'b2'],
+            ],
+            self.entities())
+
+    @within_temp_dir
+    def test_extract_new_mapper_output(self):
+        stdout_rows = self.call_without_creating_entities_file()
+
+        self.assertListEqual(
+            [
+                ['b', 'a', 'c', 'ab_id'],
+                ['b1', 'a1', 'c1', '1'],
+                ['b2', 'a2', 'c2', '2'],
+                ['b1', 'a1', 'c3', '1'],
+            ],
+            stdout_rows)
+
+    @within_temp_dir
+    def test_extract_existing_mapper_entities(self):
+        self.call_with_entities_file()
+
+        self.assertListEqual(
+            [
+                ['other', 'id', 'a'],
+                ['b1', '1', 'a1'],
+                ['b3', '3', 'a3'],
+                ['b2', '4', 'a2'],
+            ],
+            self.entities())
+
+    @within_temp_dir
+    def test_extract_existing_mapper_output(self):
+        stdout_rows = self.call_with_entities_file()
+
+        self.assertListEqual(
+            [
+                ['b', 'a', 'c', 'ab_id'],
+                ['b1', 'a1', 'c1', '1'],
+                ['b2', 'a2', 'c2', '4'],
+                ['b1', 'a1', 'c3', '1'],
+            ],
+            stdout_rows)

@@ -2,11 +2,11 @@
 Replace a set of fields with a reference to map.csv file rows
 
 Usage:
-extract_map map.csv map_fields_spec ref_field_spec
+extract_map entity_fields_spec ref_field_spec map.csv
 
 Technically:
 - read original map from map.csv if that file exists
-- remove input side of map_fields_spec from input
+- remove input side of entity_fields_spec from input
 - append input side of ref_field_spec to input
 - append new mappings to map.csv
 
@@ -22,15 +22,6 @@ from csvtools.exceptions import InvalidReferenceFieldError
 
 import csv
 
-
-'''
-parse params (map_file, field map, mapref fields)
-read in map file -> existing map
-open map file in append only mode
-for every input line:
-    get mapref for values, extend map if needed
-    write output
-'''
 
 class Mapper(object):
 
@@ -58,7 +49,7 @@ class Mapper(object):
         self._check_parameters(ref_field, fields, header)
 
         param_header = Header([ref_field] + fields)
-        self.to_map_order = list_extractor(param_header.extractors(header))
+        self.to_entity_file_order = list_extractor(param_header.extractors(header))
 
         def permutated_reader():
             transform = list_extractor(
@@ -101,7 +92,7 @@ class Mapper(object):
             self.max_ref += 1
             ref = self.max_ref
             self.values_to_ref[values] = ref
-            new_mapping = self.to_map_order((ref,) + tuple(values))
+            new_mapping = self.to_entity_file_order((ref,) + tuple(values))
             self.appender.writerow(new_mapping)
 
         return ref
@@ -132,9 +123,6 @@ class EntityExtractor(object):
             reader,
             appender)
 
-    def use_file_mapper(self, filename):
-        pass
-
     def extract(self, reader, writer):
         ireader = iter(reader)
         input_header = Header(ireader.next())
@@ -155,8 +143,21 @@ class EntityExtractor(object):
 def main():
     reader = csv.reader(sys.stdin)
     writer = csv.writer(sys.stdout)
-    map_file, map_fields, ref_field = sys.argv[1:]
-    raise NotImplementedError
+    entity_fields, ref_field, entity_file = sys.argv[1:]
+
+    extractor = EntityExtractor(
+        FieldsMap.parse(ref_field),
+        FieldsMap.parse(entity_fields),
+        keep_fields=True)
+
+    has_entity_file = os.path.exists(entity_file)
+
+    with open(entity_file, 'a+') as f:
+        if has_entity_file:
+            extractor.use_existing_mapper(csv.reader(f), csv.writer(f))
+        else:
+            extractor.use_new_mapper(csv.writer(f))
+        extractor.extract(reader, writer)
 
 
 if __name__ == '__main__':
