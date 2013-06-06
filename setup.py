@@ -3,7 +3,7 @@
 
 from setuptools import setup
 
-VERSION = '0.20130501.0'
+VERSION = '0.20130606.0'
 VERSION_SUFFIX = '-dev'
 
 setup(
@@ -30,6 +30,13 @@ setup(
             'csv_rmfields = csvtools.rmfields:main',
             'csv_extract_map = csvtools.extract_map:main',
             'csv_to_postgres = csvtools.to_postgres:main',
+            'csv_to_tsv = csvtools.csv2tsv:main',
+            'tsv_to_csv = csvtools.tsv2csv:main',
+
+            # aliases
+            'csv2postgres = csvtools.to_postgres:main',
+            'csv2tsv = csvtools.csv2tsv:main',
+            'tsv2csv = csvtools.tsv2csv:main',
         ],
     }
     )
